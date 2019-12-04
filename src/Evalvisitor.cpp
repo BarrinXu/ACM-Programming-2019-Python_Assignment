@@ -373,11 +373,17 @@ antlrcpp::Any EvalVisitor::visitOr_test(Python3Parser::Or_testContext *ctx)
     //cerr<<"visitOr_test_st"<<endl;
     if(ctx->and_test().size()==1)
         return visitAnd_test(ctx->and_test()[0]);
-    if(visitAnd_test(ctx->and_test()[0]).as<Data>().f)
+    Data tmp=visitAnd_test(ctx->and_test()[0]).as<Data>();
+    if(tmp.id==0)
+        tmp=decode(tmp.s);
+    if(tmp.tobool().f)
         return Data(true);
     for(int i=1; i<(int)ctx->and_test().size(); i++)
     {
-        if(visitAnd_test(ctx->and_test()[i]).as<Data>().f)
+        tmp=visitAnd_test(ctx->and_test()[i]).as<Data>();
+        if(tmp.id==0)
+            tmp=decode(tmp.s);
+        if(tmp.tobool().f)
         {
             return Data(true);
         }
@@ -390,11 +396,17 @@ antlrcpp::Any EvalVisitor::visitAnd_test(Python3Parser::And_testContext *ctx)
     //cerr<<"visitAnd_test_st"<<endl;
     if(ctx->not_test().size()==1)
         return visitNot_test(ctx->not_test()[0]);
-    if(!visitNot_test(ctx->not_test()[0]).as<Data>().f)
+    Data tmp=visitNot_test(ctx->not_test()[0]).as<Data>();
+    if(tmp.id==0)
+        tmp=decode(tmp.s);
+    if(!tmp.tobool().f)
         return Data(false);
     for(int i=1; i<(int)ctx->not_test().size(); i++)
     {
-        if(!visitNot_test(ctx->not_test()[i]).as<Data>().f)
+        tmp=visitNot_test(ctx->not_test()[i]).as<Data>();
+        if(tmp.id==0)
+            tmp=decode(tmp.s);
+        if(!tmp.tobool().f)
         {
             return Data(false);
         }
@@ -410,6 +422,7 @@ antlrcpp::Any EvalVisitor::visitNot_test(Python3Parser::Not_testContext *ctx)
         Data ret=visitNot_test(ctx->not_test());
         if(ret.id==0)
             ret=decode(ret.s);
+        ret=ret.tobool();
         ret.f^=1;
         return ret;
     }
